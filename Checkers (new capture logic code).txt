@@ -571,39 +571,25 @@ mouseClicked = function() {
                 var newTileY = newTile.y;
                 var oldTileY = oldTile.y;
                 
-                if(chipSelected.color === "RED") {
-                    if(newTileY <= oldTileY) {
-                        printDebug("You can only move red chips down!");
-                        return;
-                    }
-                    if((newTile.number - oldTile.number) % 9 !== 0 && (newTile.number - oldTile.number) % 7 !== 0) {
-                        printDebug("You can only move your red chips diagonally");
-                        return;
-                    }
-                    var rightDiagonalTiles = getTilesDiagonallyRight(chipSelected.color, oldTile, newTile);
-                    var leftDiagonalTiles = getTilesDiagonallyLeft(chipSelected.color, oldTile, newTile);
-                    var hasCaptured = detectIfCapture(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles);
-                    if(!hasCaptured && oldTile.y - newTile.y > 49) {
-                        printDebug("You can only move 1 spot at a time!");
-                        return;
-                    }
+                var chipColor = chipSelected.color;
+                if(newTileY <= oldTileY && chipColor === "RED") {
+                    printDebug("You can only move " + chipColor + " chips down!");
+                    return;
                 }
-                else if(chipSelected.color === "BLUE") {
-                    if(newTileY >= oldTileY) {
-                        printDebug("You can only move blue chip up!");
-                        return;
-                    }
-                    if((newTile.number - oldTile.number) % 9 !== 0 && (newTile.number - oldTile.number) % 7 !== 0) {
-                        printDebug("You can only move your blue chip diagonally");
-                        return;
-                    }
-                    var rightDiagonalTiles = getTilesDiagonallyRight(chipSelected.color, oldTile, newTile);
-                    var leftDiagonalTiles = getTilesDiagonallyLeft(chipSelected.color, oldTile, newTile);
-                    var hasCaptured = detectIfCapture(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles);
-                    if(!hasCaptured && oldTile.y - newTile.y > 49) {
-                        printDebug("You can only move 1 spot at a time!");
-                        return;
-                    }
+                if(newTileY >= oldTileY && chipColor === "BLUE") {
+                    printDebug("You can only move " + chipColor + " chips up!");
+                    return;
+                }
+                if((newTile.number - oldTile.number) % 9 !== 0 && (newTile.number - oldTile.number) % 7 !== 0) {
+                    printDebug("You can only move your " + chipColor + " chips diagonally");
+                    return;
+                }
+                var rightDiagonalTiles = getTilesDiagonallyRight(chipSelected.color, oldTile, newTile);
+                var leftDiagonalTiles = getTilesDiagonallyLeft(chipSelected.color, oldTile, newTile);
+                var hasCaptured = detectIfCapture(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles);
+                if(!hasCaptured && oldTile.y - newTile.y > 49) {
+                    printDebug("You can only move 1 spot at a time!");
+                    return;
                 }
                 selectedChip.unselectChip(newTileNumber);
                 chipSelected.x = newTile.x;
