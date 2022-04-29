@@ -1,0 +1,977 @@
+/*************
+GLOBAL VARIABLES
+**************/
+var scene = "";
+
+var COLUMS = 8;
+var ROWS = 8;
+
+var chips = [];
+var tiles = [];
+var scoreboards = [];
+
+var redScore = 0;
+var blueScore = 0;
+
+var turn = ["BLUE", "RED"];
+var selectedChip = null;
+var showDebug = false;
+var capturedAmount = 0;
+/*************/
+
+var drawBitmojiB = function(x1,y,h){
+
+var drawBitmojihead=function(x1,y,h){
+   noStroke();
+fill(242, 232, 213);
+ellipse(x1,y,1/2*h,45/100*h);//:face
+fill(255, 255, 255);
+ellipse(x1-1/10*h,y-5/100*h,1/10*h,1/10*h);//:left eye
+ellipse(x1+1/10*h,y-5/100*h,1/10*h,1/10*h);//:right eye
+fill(71, 46, 22);
+ellipse(x1-1/10*h,y-5/100*h,3/100*h,3/100*h);//:left pupil
+ellipse(x1+1/10*h,y-5/100*h,3/100*h,3/100*h);//:right pupil
+fill(242, 232, 213);
+ellipse(x1+27/100*h,y,1/10*h,15/100*h);//:right ear
+ellipse(x1-27/100*h,y,1/10*h,15/100*h);//:right ear
+stroke(0, 0, 0);
+arc(x1,y+1/10*h,1/10*h,1/10*h,0,180);//:mouth
+line(x1,y,x1+5/100*h,y+5/100*h);
+line(x1+5/100*h,y+5/100*h,x1,y+5/100*h);//: nose
+noStroke();
+fill(71, 46, 22);
+ellipse(x1,y-18/100*h,35/100*h,15/100*h);
+rect(x1+12/100*h,y-18/100*h,12/100*h,12/100*h,10);
+rect(x1-25/100*h,y-18/100*h,12/100*h,12/100*h,10);
+rect(x1-22/100*h,y-22/100*h,12/100*h,12/100*h,10);//:hair
+fill(82, 80, 82);
+arc(x1,y-15/100*h,50/100*h,60/100*h,180,360);//:hat
+fill(242, 232, 213);
+rect(x1-15/100*h,y+20/100*h,30/100*h,11/100*h);//:neck 
+}; 
+    
+var drawBitmojibody=function(x,y,h){
+
+fill(0,0,0);
+rect(x1-40/100*h,y+25/100*h,80/100*h,40/100*h);
+fill(255, 255, 255);
+triangle(x1-40/100*h,y+22/100*h,x1+40/100*h,y+22/100*h,x1,y+32/100*h);
+fill(255,255,255);
+textSize(15/100*h);
+text("BS",x1-10/100*h,y+40/100*h,120/100*h,120/100*h);//:shirt
+fill(242, 232, 213);
+rect(x1-15/100*h,y+20/100*h,30/100*h,11/100*h);//:neck
+};
+
+drawBitmojihead(x1,y,h);
+drawBitmojibody(x1,y,h);
+
+};
+
+
+/*************
+MY BITMOJI
+**************/
+var drawBitmojiHead = function(bitmojiX, bitmojiY, bitmojiHeight) {
+noStroke();
+//HEAD
+fill(235, 221, 164);
+stroke(0, 0, 0);
+strokeWeight(1);
+ellipse(bitmojiX,bitmojiY,bitmojiHeight/150*73,bitmojiHeight/150*97);
+
+//EYES
+
+//--left
+stroke(0, 0, 0);
+fill(255, 255, 255);
+ellipse(bitmojiX - (bitmojiHeight/150*13),bitmojiY - (bitmojiHeight/150 * 16),bitmojiHeight/150*16,bitmojiHeight/150*10);
+noStroke();
+fill(66, 36, 20);
+ellipse(bitmojiX - (bitmojiHeight/150 * 13),bitmojiY - (bitmojiHeight/150 * 16),bitmojiHeight/150*8,bitmojiHeight/150*9);
+fill(255, 255, 255);
+ellipse(bitmojiX - (bitmojiHeight/150 * 14),bitmojiY - (bitmojiHeight/150 * 17),bitmojiHeight/150*2,bitmojiHeight/150*2);
+
+//--right
+stroke(0, 0, 0);
+fill(255, 255, 255);
+ellipse(bitmojiX - (bitmojiHeight/150*-13),bitmojiY - (bitmojiHeight/150 * 16),bitmojiHeight/150*16,bitmojiHeight/150*10);
+noStroke();
+fill(66, 36, 20);
+ellipse(bitmojiX - (bitmojiHeight/150 * -13),bitmojiY - (bitmojiHeight/150 * 16),bitmojiHeight/150*8,bitmojiHeight/150*9);
+fill(255, 255, 255);
+ellipse(bitmojiX - (bitmojiHeight/150 * -12),bitmojiY - (bitmojiHeight/150 * 17),bitmojiHeight/150*2,bitmojiHeight/150*2);
+
+//EYEBROWS
+stroke(0, 0, 0);
+
+//--left
+line(bitmojiX - (bitmojiHeight/150 * 17),bitmojiY - (bitmojiHeight/150 * 26),bitmojiX - (bitmojiHeight/150 * 7),bitmojiY - (bitmojiHeight/150 * 26));
+line(bitmojiX - (bitmojiHeight/150 * 22),bitmojiY - (bitmojiHeight/150 * 23),bitmojiX - (bitmojiHeight/150 * 15),bitmojiY - (bitmojiHeight/150 * 26));
+//--right
+line(bitmojiX + (bitmojiHeight/150 * 18),bitmojiY - (bitmojiHeight/150 * 25),bitmojiX + (bitmojiHeight/150 * 5),bitmojiY - (bitmojiHeight/150 * 26));
+line(bitmojiX + (bitmojiHeight/150 * 22),bitmojiY - (bitmojiHeight/150 * 22),bitmojiX + (bitmojiHeight/150 * 16),bitmojiY - (bitmojiHeight/150 * 26));
+
+//HAIR
+fill(0,0,0);
+ellipse(bitmojiX + (bitmojiHeight/150 * 0),bitmojiY - (bitmojiHeight/150 * 40),bitmojiHeight/150*25,bitmojiHeight/150*11);
+ellipse(bitmojiX + (bitmojiHeight/150 * 15),bitmojiY - (bitmojiHeight/150 * 35),bitmojiHeight/150*23,bitmojiHeight/150*7);
+ellipse(bitmojiX - (bitmojiHeight/150 * 18),bitmojiY - (bitmojiHeight/150 * 38),bitmojiHeight/150*28,bitmojiHeight/150*15);
+ellipse(bitmojiX + (bitmojiHeight/150 * 18),bitmojiY - (bitmojiHeight/150 * 39),bitmojiHeight/150*24,bitmojiHeight/150*9);
+ellipse(bitmojiX + (bitmojiHeight/150 * 1),bitmojiY - (bitmojiHeight/150 * 48),bitmojiHeight/150*22,bitmojiHeight/150*10);
+ellipse(bitmojiX + (bitmojiHeight/150 * 15),bitmojiY - (bitmojiHeight/150 * 46),bitmojiHeight/150*29,bitmojiHeight/150*13);
+ellipse(bitmojiX - (bitmojiHeight/150 * 15),bitmojiY - (bitmojiHeight/150 * 48),bitmojiHeight/150*22,bitmojiHeight/150*10);
+ellipse(bitmojiX - (bitmojiHeight/150 * 28),bitmojiY - (bitmojiHeight/150 * 30),bitmojiHeight/150*5,bitmojiHeight/150*5);
+ellipse(bitmojiX + (bitmojiHeight/150 * 26),bitmojiY - (bitmojiHeight/150 * 32),bitmojiHeight/150*5,bitmojiHeight/150*5);
+
+//MOUTH
+fill(232, 208, 208);
+stroke(242, 9, 9);
+strokeWeight(3);
+arc(bitmojiX + (bitmojiHeight/150 * 0), bitmojiY + (bitmojiHeight/150 * 16), bitmojiHeight/150*35, bitmojiHeight/150*26, 47, 134);
+noFill(); 
+arc(bitmojiX + (bitmojiHeight/150 * 0), bitmojiY + (bitmojiHeight/150 * 29), bitmojiHeight/150*31, bitmojiHeight/150*-13, 39, 140);
+
+//NOSE
+fill(227, 212, 177);
+stroke(224, 192, 143);
+arc(bitmojiX + (bitmojiHeight/150 * 0), bitmojiY - (bitmojiHeight/150 * 12), bitmojiHeight/150*25, bitmojiHeight/150*55, 58, 119);
+
+//EARS
+fill(235,221,164);
+stroke(0, 0, 0);
+strokeWeight(1);
+arc(bitmojiX - (bitmojiHeight/150 * 35),bitmojiY - (bitmojiHeight/150 * 5),bitmojiHeight/150*11,bitmojiHeight/150*-12,87, 269);
+arc(bitmojiX + (bitmojiHeight/150 * 35),bitmojiY - (bitmojiHeight/150 * 5),bitmojiHeight/150*11,bitmojiHeight/150*12,253, 458);
+};
+
+
+var drawBitmojiBody = function(bitmojiX, bitmojiY, bitmojiHeight) {
+noStroke();
+//NECK
+stroke(0,0,0);
+fill(235, 221, 164);
+rect(bitmojiX - (bitmojiHeight/150 * 14), bitmojiY + (bitmojiHeight/150 * 37), bitmojiHeight/150*27, bitmojiHeight/150*36, bitmojiHeight/150*100);
+//--chain
+fill(211,211,211);
+ellipse(bitmojiX - (bitmojiHeight/150 * 10),bitmojiY + (bitmojiHeight/150 * 54),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX - (bitmojiHeight/150 * 8),bitmojiY + (bitmojiHeight/150 * 56),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX - (bitmojiHeight/150 * 5),bitmojiY + (bitmojiHeight/150 * 58),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX - (bitmojiHeight/150 * 3),bitmojiY + (bitmojiHeight/150 * 59),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX - (bitmojiHeight/150 * 1),bitmojiY + (bitmojiHeight/150 * 59),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX + (bitmojiHeight/150 * 1),bitmojiY + (bitmojiHeight/150 * 59),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX + (bitmojiHeight/150 * 3),bitmojiY + (bitmojiHeight/150 * 58),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX + (bitmojiHeight/150 * 6),bitmojiY + (bitmojiHeight/150 * 57),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX + (bitmojiHeight/150 * 8),bitmojiY + (bitmojiHeight/150 * 56),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX + (bitmojiHeight/150 * 10),bitmojiY + (bitmojiHeight/150 * 55),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX + (bitmojiHeight/150 * 12),bitmojiY + (bitmojiHeight/150 * 54),bitmojiHeight/150*3,bitmojiHeight/150*3);
+ellipse(bitmojiX - (bitmojiHeight/150 * 12),bitmojiY + (bitmojiHeight/150 * 53),bitmojiHeight/150*3,bitmojiHeight/150*3);
+
+//SHIRT
+fill(175, 237, 113);
+rect(bitmojiX - (bitmojiHeight/150 * 29),bitmojiY + (bitmojiHeight/150 * 63),bitmojiHeight/150*58,bitmojiHeight/150*28,bitmojiHeight/150*74);
+//--initials
+fill(255, 255, 255);
+textSize(bitmojiHeight/150*20);
+text("Z S", bitmojiX - (bitmojiHeight/150 * 15),bitmojiY + (bitmojiHeight/150 * 85));
+};
+
+/* */
+
+var drawBitmojiZ = function(bitmojiX, bitmojiY, bitmojiHeight) {
+    drawBitmojiBody(bitmojiX, bitmojiY, bitmojiHeight);
+    drawBitmojiHead(bitmojiX, bitmojiY, bitmojiHeight);
+};
+/*************/
+
+/*************
+BUTTON OBJECT
+**************/
+//All of this code was copied from Khan Button Class
+/*Use the Button object class from the Khan lessons. Instantiate a button called startButton, have it drawn on the opening scene screen. When it is clicked, have the scene change to the app. You must use the Khan button class.*/
+
+//I modified/added properties to this Constructor
+var Button = function(config) {
+    this.x = config.x || 0;
+    this.y = config.y || 0;
+    this.width = config.width || 150;
+    this.height = config.height || 50;
+    this.label = config.label;
+    this.buttonColor = config.buttonColor;
+    this.textColor = config.textColor;
+    this.buttonTextX = config.buttonTextX;
+};
+
+//I also modified the object functions below to fit my program
+Button.prototype.draw = function() {
+    fill(this.buttonColor);
+    rect(this.x, this.y, this.width, this.height, 5);
+    textSize(19);
+    textAlign(LEFT, TOP);
+    fill(this.textColor);
+    text(this.label, (this.x + this.width - 74) + this.buttonTextX, this.y + 14);
+};
+
+//Renamed this function to "isClicked" because its easier to remember
+Button.prototype.isClicked = function() {
+    return mouseX > this.x &&
+           mouseX < (this.x + this.width) &&
+           mouseY > this.y &&
+           mouseY < (this.y + this.height);
+};
+/*************/
+
+/*************
+MOVINGSCOREBOARD OBJECT
+**************/
+
+/*
+
+MovingScoreboard Object:
+ * Used to create moving scoreboards for the board
+ * These objects have properties: x, y, width, height, radius, comeFromNumber, returnBackNumber, moveInDirection, canMoveIn
+ * x, y, width, height, radius are self explanatory
+ * "comeFromNumber" property returns the number the scoreboard should come from into the board
+ * "returnBackNumber" property returns the number the scoreboard should return back to the comeFromNumber out of the board
+ * "moveInDirection" returns the direction the scoreboard moves into the board
+ * "canMoveIn" property returns if the scoreboard is allowed to move into the board
+
+*/
+
+//MovingScoreboard constructor to create new MovingScoreboard objects
+var MovingScoreboard = function(x, y, width, height, radius, comeFromNumber, returnBackNumber, moveInDirection) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.radius = radius;
+    this.comeFromNumber = comeFromNumber;
+    this.returnBackNumber = returnBackNumber;
+    this.moveInDirection = moveInDirection;
+    this.canMoveIn = false;
+};
+
+//A method that draws the scoreboard
+MovingScoreboard.prototype.drawScoreboard = function() {
+    rectMode(CENTER);
+    ellipseMode(CENTER);
+    fill(40, 19, 99);
+    rect(this.x,this.y,this.width,this.height, this.radius);
+};
+
+//A method that adds text to the scoreboard
+MovingScoreboard.prototype.addText = function(message, textFont, modifiedX, modifiedY) {
+    rectMode(CENTER);
+    ellipseMode(CENTER);
+    textSize(textFont);
+    fill(255, 255, 255);
+    text(message, this.x + modifiedX, this.y + modifiedY);
+};
+
+//A method that is to ensure the scoreboard is constantly "running" or "updating"
+MovingScoreboard.prototype.run = function() {
+    if(this.canMoveIn) {
+        if(this.moveInDirection === "LEFT") {
+            if(this.x <= this.returnBackNumber) {
+                this.x = this.returnBackNumber;
+                this.canMoveIn = false;
+                return;
+            }
+            this.x--;
+        }
+        else if(this.moveInDirection === "DOWN") {
+            if(this.y >= this.returnBackNumber) {
+                this.y = this.returnBackNumber;
+                this.canMoveIn = false;
+                return;
+            }
+            this.y++;
+        }
+    }
+    else {
+        if(this.moveInDirection === "LEFT") {
+            if(this.x >= this.comeFromNumber) {
+                this.x = this.comeFromNumber;
+                return;
+            }
+            this.x++;
+        }
+        else if(this.moveInDirection === "DOWN") {
+            if(this.y <= this.comeFromNumber) {
+                this.y = this.comeFromNumber;
+                return;
+            }
+            this.y--;
+        }
+    }
+};
+
+//A method to check if the scoreboard has been clicked
+MovingScoreboard.prototype.isClicked = function() {
+    return mouseX > (this.x - this.width/2) && mouseX < (this.x + this.width/2) && mouseY > (this.y - this.height/2) && mouseY < (this.y + this.height/2);
+};
+/*************/
+
+//Two objects instaces created from the MovingScoreboard constructor
+var pointsScoreboard = new MovingScoreboard(430, 202, 75, 50, 5, 430, 380, "LEFT");
+var turnNotifyScoreboard = new MovingScoreboard(199, -10, 104, 39, 223, -10, 20, "DOWN");
+
+//Adding both objects to a scoreboard array
+scoreboards.push(pointsScoreboard);
+scoreboards.push(turnNotifyScoreboard);
+
+//A function to update the Points Scoreboard
+function updatePointsScoreboard() {
+    pointsScoreboard.run();
+    pointsScoreboard.drawScoreboard();
+    pointsScoreboard.addText("Red: " + redScore, 12, -31, -17);
+    pointsScoreboard.addText("Blue: " + blueScore, 12, -31, 2);
+}
+
+//A function to update the Turn Notify Scoreboard
+function updateTurnNotifyScoreboard() {
+    turnNotifyScoreboard.run();
+    turnNotifyScoreboard.drawScoreboard();
+    turnNotifyScoreboard.addText(turn[0] + "'s Turn", 15, -40, -11);
+}
+
+//A function to print debug to the console
+function printDebug(message) {
+    if(showDebug) {
+        println("[Checkers] " + message);
+    }
+}
+
+//A startButton object
+var startButton = new Button(
+    {
+        x: 149,
+        y: 235,
+        width: 104,
+        height: 48,
+        label: "Start",
+        textColor: color(74, 4, 4),
+        buttonTextX: 1
+    }
+);
+
+//A restartButton object
+var restartButton = new Button(
+    {
+        x: 142,
+        y: 216,
+        width: 104,
+        height: 48,
+        label: "Restart",
+        textColor: color(0, 0, 0),
+        buttonTextX: -6
+    }
+);
+
+/*************
+CHIP OBJECT
+**************/
+
+/*
+
+Chip Object:
+ * Used to create chips for the board
+ * These objects have properties: x, y, isSelected, tileNumber, color, & isKing
+ * x, y are self explanatory
+ * "isSelected" property returns if the chip is selected
+ * "tileNumber" property returns what tile the chip is on
+ * "color" property returns what color the chip is
+ * "isKing" property returns if the chip is a king or not
+
+*/
+
+//Chip constructor to create new chip objects
+var Chip = function(x, y) {
+    this.x = x;
+    this.y = y;
+    this.isSelected = false;
+    this.tileNumber = null;
+    this.color = null;
+    this.isKing = false;
+};
+
+//A method used to get the tile the chip is on
+Chip.prototype.getTile = function() {
+    return tiles[this.tileNumber - 1];
+};
+
+//A method to check if you clicked the chip
+Chip.prototype.isClicked = function() {
+    return this.x - 18 < mouseX && this.x + 18 > mouseX && this.y + 18 > mouseY && this.y - 18 < mouseY;
+};
+
+//A method to draw the chip
+Chip.prototype.draw = function() {
+    if(this.isSelected) {
+        fill(4, 255, 0);
+    }
+    else {
+        if(this.color === "RED" ) {
+            fill(252, 0, 0);
+        }
+        else if (this.color === "BLUE") {
+            fill(119, 209, 219);
+        }
+    }
+    ellipse(this.x, this.y, 35, 35);
+    if(this.isKing) {
+        textSize(20);
+        fill(0, 0, 0);
+        text("♛", this.x - 10, this.y + -12);
+    }
+};
+/*************/
+
+/*************
+TILE OBJECT
+**************/
+
+/*
+
+Tile Object:
+ * Used to create tiles for the board
+ * These objects have properties: x, y, number, color, hasChip, chipColor, & chip
+ * x, y are self explanatory
+ * "number" property returns the tile number
+ * "color" property returns the color of the tile
+ * "hasChip" property returns if the tile has a chip on it
+ * "chipColor" property returns what the chip color is if it has a chip on it
+ * "chip" property returns the chip object on the tile
+
+*/
+
+//Tile constructor to create new tile objects
+var Tile = function(x, y, number) {
+    this.x = x;
+    this.y = y;
+    this.number = number;
+    this.color = null;
+    this.hasChip = false;
+    this.chipColor = null;
+    this.chip = null;
+};
+
+//A method that detects if the tile is clicked
+Tile.prototype.isClicked = function() {
+    return this.x - 25 < mouseX && this.x + 25 > mouseX && this.y + 25 > mouseY && this.y - 25 < mouseY;
+};
+
+//A method that draws the tile depending on its color
+Tile.prototype.draw = function() {
+    if(this.color === "BLACK") {
+        fill(0, 0, 0);
+    }
+    else if(this.color === "WHITE") {
+        fill(255, 255, 255);
+    }
+    rect(this.x, this.y, 48,48);
+    fill(209, 111, 209);
+    textSize(20);
+};
+/*************/
+
+/*************
+REGULAR FUNCTIONS
+**************/
+//A function to create chips
+function createChip(tile, color, isKing) {
+    var chip = new Chip(tile.x, tile.y);
+    chip.color = color;
+    chip.tileNumber = tile.number;
+    chip.draw();
+    chip.isKing = isKing;
+    chips.push(chip);
+    tile.hasChip = true;
+    tile.chipColor = chip.color;
+    tile.chip = chip;
+}
+
+//A function to add chips to the board (red & blue)
+function addChipsToBoard() {
+    for(var i = 0; i < 24; i++) {
+        var tile = tiles[i];
+        if(tile.color === "BLACK") {
+            createChip(tile, "RED", false);
+        }
+    }
+    
+    for(var i = 40; i < 64; i++) {
+        var tile = tiles[i];
+        if(tile.color === "BLACK") {
+            createChip(tile, "BLUE", false);
+        }
+    }
+}
+
+//A function to update all the chips in the board (used in the "drawboard" function)
+function updateChips() {
+    for(var i = 0; i < chips.length; i++) {
+        var chip = chips[i];
+        chip.draw();
+    }
+}
+
+//A function to update the turn when a player moves a chip
+function updateTurn() {
+    var removedTurn = turn.shift();
+    turn.push(removedTurn);
+    turnNotifyScoreboard.canMoveIn = true;
+}
+
+//A function to draw the board and update chips locations
+function drawBoard() {
+    background(0, 0, 0);
+    rectMode(CENTER);
+    ellipseMode(CENTER);
+    
+    var tileNumber = 0;
+    for(var i = 0; i < ROWS; i++) {
+        for(var j = 0; j < COLUMS; j++) {
+            tileNumber++;
+            
+            var isEvenRow = i % 2 === 0;
+            var isOddRow = i % 2 !== 0;
+            var isEvenTile = tileNumber % 2 === 0;
+            var isOddTile = tileNumber % 2 !== 0;
+            
+            var tileX = (49 * j) + 27;
+            var tileY = (49 * i) + 30;
+            
+            var tile = new Tile(tileX, tileY, tileNumber);
+            if(isEvenRow && isOddTile) {
+                tile.color = "WHITE";
+            }
+            else if(isEvenRow && isEvenTile) {
+                tile.color = "BLACK";
+            }
+            else if(isOddRow && isEvenTile) {
+                tile.color = "WHITE";
+            }
+            else if(isOddRow && isOddTile) {
+                tile.color = "BLACK";
+            }
+            tiles.push(tile);
+            tile.draw();
+        }
+    }
+    updateChips();
+}
+
+//A function to remove chips from the board
+function removeChipFromBoard(tileChipWasOn) {
+    var chip = tileChipWasOn.chip;
+    chip.x = -10000;
+    chip.y = -10000;
+    tileChipWasOn.hasChip = false;
+    tileChipWasOn.chipColor = null;
+    tileChipWasOn.chip = null;
+}
+
+//A function to grab all the tiles diagonally right (up & down)
+function getTilesDiagonallyRight(chipSelected, oldTile, newTile) {
+    var allRightDiagonalTiles = [];
+    var oldTileNumber = oldTile.number;
+    var chipColor = chipSelected.color;
+    var isKing = chipSelected.isKing;
+    
+    if(!isKing) {
+        if(chipColor === "BLUE") {
+            for(var i = oldTileNumber; i >= 0; i--) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
+                allRightDiagonalTiles.push(tile);
+                }
+            }
+        }
+        if(chipColor === "RED") {
+            for(var i = oldTileNumber; i <= 64; i++) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
+                    allRightDiagonalTiles.push(tile);
+                }
+            }
+        }
+    }
+    else {
+        var direction = oldTile.number > newTile.number ? "UP" : "DOWN";
+        if(direction === "UP") {
+            if(chipColor === "BLUE" || chipColor === "RED") {
+                for(var i = oldTileNumber; i >= 0; i--) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                    allRightDiagonalTiles.push(tile);
+                    }
+                }
+            }
+        }
+        else if(direction === "DOWN") {
+            if(chipColor === "BLUE" || chipColor === "RED") {
+                for(var i = oldTileNumber; i <= 64; i++) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                        allRightDiagonalTiles.push(tile);
+                    }
+                }
+            }
+        }
+    }
+    return allRightDiagonalTiles;
+}
+
+//A function to grab all the tiles diagonally left (up & down)
+function getTilesDiagonallyLeft(chipSelected, oldTile, newTile) {
+    var allLeftDiagonalTiles = [];
+    var oldTileNumber = oldTile.number;
+    var chipColor = chipSelected.color;
+    var isKing = chipSelected.isKing;
+    
+    if(!isKing) {
+        if(chipColor === "BLUE"){
+            for(var i = oldTileNumber; i >= 0; i--) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
+                    allLeftDiagonalTiles.push(tile);
+                }
+            }
+        }
+        if(chipColor === "RED") {
+            for(var i = oldTileNumber; i <= 64; i++) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
+                    allLeftDiagonalTiles.push(tile);
+                }
+            }
+        }
+    }
+    else {
+        var direction = oldTile.number > newTile.number ? "UP" : "DOWN";
+        if(direction === "UP") {
+            if(chipColor === "BLUE" || chipColor === "RED"){
+                for(var i = oldTileNumber; i >= 0; i--) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                        allLeftDiagonalTiles.push(tile);
+                    }
+                }
+            }
+        }
+        else if(direction === "DOWN") {
+            if(chipColor === "BLUE" || chipColor === "RED"){
+                for(var i = oldTileNumber; i <= 64; i++) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                        allLeftDiagonalTiles.push(tile);
+                    }
+                }
+            }
+        }
+    }
+    return allLeftDiagonalTiles;
+}
+
+//A function that detect if you have captured an enemy chip on the board
+function detectIfCapture(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles) {
+    //Right capture logic
+    //1 Chip Capture
+    if(rightDiagonalTiles.length >= 2) {
+        if(rightDiagonalTiles[0].hasChip && rightDiagonalTiles[0].chipColor !== oldTile.chipColor && !rightDiagonalTiles[1].hasChip && newTile.number === rightDiagonalTiles[1].number) {
+            removeChipFromBoard(rightDiagonalTiles[0]);
+            capturedAmount = 1;
+            return true;
+        }
+    }
+    //2 Chip Capture
+    if(rightDiagonalTiles.length >= 4) {
+        if(rightDiagonalTiles[0].hasChip && rightDiagonalTiles[0].chipColor !== oldTile.chipColor && !rightDiagonalTiles[1].hasChip && rightDiagonalTiles[2].hasChip && rightDiagonalTiles[2].chipColor !== oldTile.chipColor && !rightDiagonalTiles[3].hasChip && newTile.number === rightDiagonalTiles[3].number) {
+            removeChipFromBoard(rightDiagonalTiles[0]);
+            removeChipFromBoard(rightDiagonalTiles[2]);
+            capturedAmount = 2;
+            return true;
+        }
+    }
+    //Left capture logic
+    //1 Chip Capture
+    if(leftDiagonalTiles.length >= 2) {
+        if(leftDiagonalTiles[0].hasChip && leftDiagonalTiles[0].chipColor !== oldTile.chipColor && !leftDiagonalTiles[1].hasChip && newTile.number === leftDiagonalTiles[1].number) {
+            removeChipFromBoard(leftDiagonalTiles[0]);
+            capturedAmount = 1;
+            return true;
+        }
+    }
+    //2 Chip Capture
+    if(leftDiagonalTiles.length >= 4) {
+        if(leftDiagonalTiles[0].hasChip && leftDiagonalTiles[0].chipColor !== oldTile.chipColor && !leftDiagonalTiles[1].hasChip && leftDiagonalTiles[2].hasChip && leftDiagonalTiles[2].chipColor !== oldTile.chipColor && !leftDiagonalTiles[3].hasChip && newTile.number === leftDiagonalTiles[3].number) {
+            removeChipFromBoard(leftDiagonalTiles[0]);
+            removeChipFromBoard(leftDiagonalTiles[2]);
+            capturedAmount = 2;
+            return true;
+        }
+    }
+    return false;
+}
+
+//A function that randomizes the turn
+function randomizeTurn() {
+    var randomNumber = round(random(0,1));
+    var color = turn[randomNumber];
+    
+    turn.pop();
+    turn.pop();
+    
+    if(color === "BLUE") {
+        turn[0] = "BLUE";
+        turn[1] = "RED";
+    }
+    else if(color === "RED") {
+        turn[0] = "RED";
+        turn[1] = "BLUE";
+    }
+    
+    turnNotifyScoreboard.canMoveIn = true;
+}
+
+//A function that draws the start screen
+function drawStartScreen() {
+    scene = "start_screen";
+    background(74, 4, 4);
+    textSize(57);
+    fill(255, 255, 255);
+    text("Checkers", 78, 100);
+    textSize(15);
+    text("How to win?: Capture all the opponents chips", 50, 145);
+    textSize(25);
+    text("Click below to play", 94, 195);
+    drawBitmojiB(106, 321, 100);
+    drawBitmojiZ(298,324,100);
+    startButton.draw();
+}
+
+//A function that draws the winner screen
+function drawWinnerScreen(color) {
+    rectMode(CORNER);
+    ellipseMode(CORNER);
+    scene = "winner_screen";
+    background(74, 4, 4);
+    if(color === "BLUE") {
+        fill(119, 209, 219);
+    }
+    else if(color === "RED") {
+        fill(252, 0, 0);
+    }
+    textSize(35);
+    text("Winner: " + color + " CHIPS", 30, 110);
+    textSize(25);
+    fill(255, 255, 255);
+    text("Click below to restart the game", 30, 170);
+    restartButton.draw();
+}
+
+//A function that givepoints dependent on how many chips they captured
+function givePoints(color) {
+    if(color === "BLUE") {
+        for(var i = 0; i < capturedAmount; i++) {
+            blueScore++;
+        }
+    }
+    else if(color === "RED") {
+        for(var i = 0; i < capturedAmount; i++) {
+            redScore++;
+        }
+    }
+}
+/*************/
+
+/*************
+KHAN FUNCTIONS
+**************/
+mouseClicked = function() {
+    
+    //A check if you clicked the start button in the "start_screen"
+    if(scene === "start_screen") {
+        if(!startButton.isClicked()) {
+            return;
+        }
+        scene = "game_screen";
+        drawBoard();
+        addChipsToBoard();
+        randomizeTurn();
+        return;
+    }
+    
+    //A check if you have clicked the restart button in the "winner_screen"
+    if(scene === "winner_screen") {
+        if(!restartButton.isClicked()) {
+            return;
+        }
+        Program.restart();
+        return;
+    }
+    
+    //Logic to check if you clicked a scoreboard in the game so it can move in to show you the information written on it
+    for(var i = 0; i < scoreboards.length; i++) {
+        var scoreboard = scoreboards[i];
+        if(scoreboard.isClicked()) {
+            scoreboard.canMoveIn = true;
+            return;
+        }
+    }
+    
+    //Logic to move a chip, select a new chip, capture a chip, etc...
+    if(selectedChip !== null && selectedChip.isSelected) {
+        for(var i = 0; i < tiles.length; i++) {
+            var newTile = tiles[i];
+            var newTileNumber = i + 1;
+            if(newTile.isClicked()) {
+                var oldTile = selectedChip.getTile();
+                if(newTile === oldTile) {
+                    selectedChip.isSelected = false;
+                    return;
+                }
+                if(newTile.hasChip === true && oldTile.chipColor !== newTile.chipColor) {
+                    return;
+                }
+                if(newTile.hasChip && oldTile.chipColor === newTile.chipColor) {
+                    selectedChip.isSelected = false;
+                    var newTileChip = newTile.chip;
+                    selectedChip = newTileChip;
+                    newTileChip.isSelected = true;
+                    return;
+                }
+                if(newTile.color === "WHITE") {
+                    return;
+                }
+                
+                var newTileY = newTile.y;
+                var oldTileY = oldTile.y;
+                
+                var chipColor = selectedChip.color;
+                if((newTile.number - oldTile.number) % 9 !== 0 && (newTile.number - oldTile.number) % 7 !== 0) {
+                    return;
+                }
+                if(newTileY <= oldTileY && chipColor === "RED" && !selectedChip.isKing) {
+                    return;
+                }
+                if(newTileY >= oldTileY && chipColor === "BLUE" && !selectedChip.isKing) {
+                    return;
+                }
+                
+                var rightDiagonalTiles = getTilesDiagonallyRight(selectedChip, oldTile, newTile);
+                var leftDiagonalTiles = getTilesDiagonallyLeft(selectedChip, oldTile, newTile);
+                var hasCaptured = detectIfCapture(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles);
+                
+                if(!hasCaptured && oldTile.y - newTile.y > 49 && chipColor === "BLUE" ||
+                !hasCaptured && oldTile.y - newTile.y > 49 && chipColor === "RED" && selectedChip.isKing) {
+                    return;
+                }
+                if(!hasCaptured && newTile.y - oldTile.y > 49 && chipColor === "RED" || !hasCaptured && newTile.y - oldTile.y > 49 && chipColor === "BLUE" && selectedChip.isKing) {
+                    return;
+                }
+                
+                selectedChip.x = newTile.x;
+                selectedChip.y = newTile.y;
+                
+                oldTile.hasChip = false;
+                oldTile.chipColor = null;
+                oldTile.chip = null;
+                
+                newTile.hasChip = true;
+                newTile.chipColor = selectedChip.color;
+                newTile.chip = selectedChip;
+                
+                selectedChip.isSelected = false;
+                selectedChip.tileNumber = newTileNumber;
+                
+                if(chipColor === "BLUE" && newTile.number >= 1 && newTile.number <= 8) {
+                    selectedChip.isKing = true;
+                }
+                else if(chipColor === "RED" && newTile.number >= 57 && newTile.number <= 64) {
+                    selectedChip.isKing = true;
+                }
+                
+                if(hasCaptured) {
+                    if(chipColor === "BLUE") {
+                        givePoints("BLUE");
+                    }
+                    else if(chipColor === "RED") {
+                        givePoints("RED");
+                    }
+                    pointsScoreboard.canMoveIn = true;
+                }
+                
+                if(blueScore >= 12) {
+                    drawWinnerScreen("BLUE");
+                }
+                else if(redScore >= 12) {
+                    drawWinnerScreen("RED");
+                }
+                
+                updateTurn();
+                return;
+            }
+        }
+    }
+    
+    //Logic to select a chip
+    for(var i = 0; i < chips.length; i++) {
+        var chip = chips[i];
+        if(turn[0] !== chip.color) {
+            continue;
+        }
+        if(!chip.isClicked()) {
+            continue;
+        }
+        
+        if(chip.isSelected === false) {
+            selectedChip = chip;
+            chip.isSelected = true;
+        }
+    }
+};
+
+//Khan draw function
+draw = function() {
+    //A check to see if you are only on the "game_screen", if so, run the game code below this if statement
+    if(scene !== "game_screen") {
+        return;
+    }
+    
+    //Updates the checkers scoreboard (tiles & chips)
+    drawBoard();
+    updatePointsScoreboard();
+    updateTurnNotifyScoreboard();
+};
+/*************/
+
+/*************
+MAIN PROGRAM
+**************/
+drawStartScreen();
