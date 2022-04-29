@@ -7,6 +7,7 @@ var redScore = 0;
 var blueScore = 0;
 var turn = ["BLUE", "RED"];
 var scoreboards = [];
+var selectedChip = null;
 
 var drawBitmojiB = function(x1,y,h){
 
@@ -286,26 +287,30 @@ MovingScoreboard.prototype.isClicked = function() {
 //addText = function(text, textSize, modifiedX, modified
 var pointsScoreboard = new MovingScoreboard(430,202, 75, 50, 5, 430, 380, "LEFT");
 var turnNotifyScoreboard = new MovingScoreboard(199, -10, 104, 39, 223, -10, 20, "DOWN");
+
 scoreboards.push(pointsScoreboard);
 scoreboards.push(turnNotifyScoreboard);
+
 function updatePointsScoreboard() {
     pointsScoreboard.run();
     pointsScoreboard.drawScoreboard();
     pointsScoreboard.addText("Red: " + redScore, 12, -31, -17);
     pointsScoreboard.addText("Blue: " + blueScore, 12, -31, 2);
 }
+
 function updateTurnNotifyScoreboard() {
     turnNotifyScoreboard.run();
     turnNotifyScoreboard.drawScoreboard();
     turnNotifyScoreboard.addText(turn[0] + "'s Turn", 15, -40, -11);
 }
-var printDebug = function(message) {
-    println("[Checkers] " + message);
-};
 
-var isEven = function(number) {
+function printDebug(message) {
+    //println("[Checkers] " + message);
+}
+
+function isEven(number) {
     return number % 2 === 0;
-};
+}
 
 var startButton = new Button(
     {
@@ -321,7 +326,7 @@ var startButton = new Button(
 
 var restartButton = new Button(
     {
-        x: 152,
+        x: 142,
         y: 216,
         width: 104,
         height: 48,
@@ -330,41 +335,6 @@ var restartButton = new Button(
         buttonTextX: -6
     }
 );
-
-/*************
-SELECTEDCHIP OBJECT
-**************/
-var SelectedChip = function() {
-    this.isSelected = false;
-    this.array = null;
-    this.index = null;
-    this.color = null;
-    this.isKing  = false;
-};
-
-SelectedChip.prototype.setChip = function(array, index) {
-    this.isSelected = true;
-    this.array = array;
-    this.index = index;
-    this.color = array[index].color;
-    this.isKing = array[index].isKing;
-};
-
-SelectedChip.prototype.getChip = function() {
-    var array = this.array;
-    var index = this.index;
-    return array[index];
-};
-
-SelectedChip.prototype.unselectChip = function(tileNumber) {
-    this.getChip().tileNumber = tileNumber;
-    this.getChip().isSelected = false;
-    this.isSelected = false;
-    this.array = null;
-};
-/*************/
-
-var selectedChip = new SelectedChip();
 
 /*************
 CHIP OBJECT
@@ -404,14 +374,14 @@ Chip.prototype.draw = function() {
         fill(0, 0, 0);
         text("♛", this.x - 10, this.y + -12);
     }
-    for(var i = 0; i < chips.length; i++) {
+    /*for(var i = 0; i < chips.length; i++) {
         var chipInArray = chips[i];
         if(this === chipInArray) {
             fill(255, 255, 255);
             textSize(15);
             text(i, this.x - 10, this.y + -8);
         }
-    }
+    }*/
 };
 /*************/
 
@@ -425,16 +395,7 @@ var Tile = function(x, y, number) {
     this.color = null;
     this.hasChip = false;
     this.chipColor = null;
-};
-
-Tile.prototype.getChip = function() {
-    for(var i = 0; i < chips.length; i++) {
-        var chip = chips[i];
-        if(this.number === chip.tileNumber) {
-            return chip;
-        }
-    }
-    return null;
+    this.chip = null;
 };
 
 Tile.prototype.isClicked = function() {
@@ -451,55 +412,71 @@ Tile.prototype.draw = function() {
     rect(this.x, this.y, 48,48);
     fill(209, 111, 209);
     textSize(20);
-    text(this.number, this.x, this.y);
+    //text(this.number, this.x, this.y);
 };
 /*************/
 
 /*************
 REGULAR FUNCTIONS
 **************/
-var addChipsToBoard = function() {
+function printChipAtArrayIndex(chip, removed) {
+    for(var i = 0; i < chips.length; i++) {
+        var chipInArray = chips[i];
+        if(chipInArray === chip && chipInArray.tileNumber === chip.tileNumber) {
+            if(removed) {
+                printDebug(chipInArray.color + " chip destroyed at index " + i);
+            }
+            else {
+                printDebug(chipInArray.color + " chip selected at index " + i);
+            }
+        }
+    }
+}
+
+function addChipsToBoard() {
+    
+    function createChip(tile, color, isKing) {
+        var chip = new Chip(tile.x, tile.y);
+        chip.color = color;
+        chip.tileNumber = tile.number;
+        chip.draw();
+        chip.isKing = isKing;
+        chips.push(chip);
+        tile.hasChip = true;
+        tile.chipColor = chip.color;
+        tile.chip = chip;
+    }
+    
     for(var i = 0; i < 24; i++) {
         var tile = tiles[i];
         if(tile.color === "BLACK") {
-            var chip = new Chip(tile.x, tile.y);
-            chip.color = "RED";
-            chip.tileNumber = tile.number;
-            chip.draw();
-            chips.push(chip);
-            tile.hasChip = true;
-            tile.chipColor = chip.color;
+            createChip(tile, "RED", false);
         }
     }
     
     for(var i = 40; i < 64; i++) {
         var tile = tiles[i];
         if(tile.color === "BLACK") {
-            var chip = new Chip(tile.x, tile.y);
-            chip.color = "BLUE";
-            chip.tileNumber = tile.number;
-            chip.draw();
-            chips.push(chip);
-            tile.hasChip = true;
-            tile.chipColor = chip.color;
+            createChip(tile, "BLUE", false);
         }
     }
-};
-var updateChips = function() {
+}
+
+function updateChips() {
     for(var i = 0; i < chips.length; i++) {
         var chip = chips[i];
         chip.draw();
     }
-};
+}
 
-var updateTurn = function() {
+function updateTurn() {
     var removedTurn = turn.shift();
     turn.push(removedTurn);
     turnNotifyScoreboard.canMoveIn = true;
     printDebug(turn[0] + "'s turn");
-};
+}
 
-var drawBoard = function() {
+function drawBoard() {
     background(0, 0, 0);
     rectMode(CENTER);
     ellipseMode(CENTER);
@@ -535,146 +512,188 @@ var drawBoard = function() {
         }
     }
     updateChips();
-};
+}
 
-var removeChipFromBoard = function(tileChipWasOn, chip) {
-    //printDebug("Chip (Color: " + tileChipWasOn.chipColor + "/ " + chip.color + ") (# " + tileChipWasOn.number + "/ " + chip.tileNumber + ") After Removed Information");
-        tileChipWasOn.hasChip = false;
-        tileChipWasOn.chipColor = null;
-        
-        chip.x = -10000;
-        chip.y = -10000;
-        
-        for(var i = 0; i < chips.length; i++) {
-            var chipInArray = chips[i];
-            if(chipInArray === chip) {
-                printDebug("Removing chip from board at chips index # " + i);
-                return;
-            }
-        }
-};
+function removeChipFromBoard(tileChipWasOn) {
+    printDebug("removeChipFromBoard Function 1");
+    printDebug("Attempting to remove chip from tile #: " + tileChipWasOn.number);
+    var chip = tileChipWasOn.chip;
+    printDebug("Removed Chip Information:");
+    printDebug(" * Color: " + chip.color);
+    printDebug(" * Tile Number: " + chip.tileNumber);
+    chip.x = -10000;
+    chip.y = -10000;
+    tileChipWasOn.hasChip = false;
+    tileChipWasOn.chipColor = null;
+    tileChipWasOn.chip = null;
+}
 
-var getTilesDiagonallyRight = function(chipSelected, oldTile, newTile) {
+function getTilesDiagonallyRight(chipSelected, oldTile, newTile) {
     var allRightDiagonalTiles = [];
     var oldTileNumber = oldTile.number;
     var chipColor = chipSelected.color;
+    var isKing = chipSelected.isKing;
     
-    if(chipColor === "RED" && chipSelected.isKing){
-        for(var i = oldTileNumber; i >= 0; i--) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
-                }
+    if(!isKing) {
+        if(chipColor === "BLUE") {
+            printDebug("(DIAGONAL RIGHT) BLUE UP");
+            for(var i = oldTileNumber; i >= 0; i--) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
                 allRightDiagonalTiles.push(tile);
+                }
+            }
+        }
+        if(chipColor === "RED") {
+            printDebug("(DIAGONAL RIGHT) RED DOWN");
+            for(var i = oldTileNumber; i <= 64; i++) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
+                    allRightDiagonalTiles.push(tile);
+                }
             }
         }
     }
-    else if(chipColor === "BLUE" && chipSelected.isKing) {
-        for(var i = oldTileNumber; i <= 56; i++) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
+    else {
+        var direction = oldTile.number > newTile.number ? "UP" : "DOWN";
+        printDebug("Direction: " + direction);
+        if(direction === "UP") {
+            if(chipColor === "BLUE" || chipColor === "RED") {
+                printDebug("(DIAGONAL RIGHT) BLUE OR RED UP");
+                for(var i = oldTileNumber; i >= 0; i--) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                    allRightDiagonalTiles.push(tile);
+                    }
                 }
-                allRightDiagonalTiles.push(tile);
             }
         }
-    }
-    
-    if(chipColor === "BLUE"){
-        for(var i = oldTileNumber; i >= 0; i--) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
+        else if(direction === "DOWN") {
+            if(chipColor === "BLUE" || chipColor === "RED") {
+                printDebug("(DIAGONAL RIGHT) BLUE OR RED DOWN");
+                for(var i = oldTileNumber; i <= 64; i++) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                        allRightDiagonalTiles.push(tile);
+                    }
                 }
-                allRightDiagonalTiles.push(tile);
-            }
-        }
-    }
-    else if(chipColor === "RED") {
-        for(var i = oldTileNumber; i <= 56; i++) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
-                }
-                allRightDiagonalTiles.push(tile);
             }
         }
     }
     return allRightDiagonalTiles;
-};
+}
 
-var getTilesDiagonallyLeft = function(chipSelected, oldTile, newTile) {
+function getTilesDiagonallyLeft(chipSelected, oldTile, newTile) {
     var allLeftDiagonalTiles = [];
     var oldTileNumber = oldTile.number;
     var chipColor = chipSelected.color;
-    printDebug("isKing: " + chipSelected.isKing);
-    if(chipColor === "BLUE" && chipSelected.isKing) {
-        printDebug("true");
-        for(var i = oldTileNumber; i <= 56; i++) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
-                }
-                allLeftDiagonalTiles.push(tile);
-            }
-        }
-    }
-    else if(chipColor === "RED" && chipSelected.isKing) {
-        for(var i = oldTileNumber; i >= 0; i--) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
-                }
-                allLeftDiagonalTiles.push(tile);
-            }
-        }
-    }
+    var isKing = chipSelected.isKing;
     
-    if(chipColor === "BLUE") {
-        for(var i = oldTileNumber; i >= 0; i--) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
+    if(!isKing) {
+        if(chipColor === "BLUE"){
+            printDebug("(DIAGONAL LEFT) BLUE UP");
+            for(var i = oldTileNumber; i >= 0; i--) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
+                    allLeftDiagonalTiles.push(tile);
                 }
-                allLeftDiagonalTiles.push(tile);
+            }
+        }
+        if(chipColor === "RED") {
+            printDebug("(DIAGONAL LEFT) RED DOWN");
+            for(var i = oldTileNumber; i <= 64; i++) {
+                var tile = tiles[i];
+                if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                    if(tile.number === oldTileNumber) {
+                        continue;
+                    }
+                    allLeftDiagonalTiles.push(tile);
+                }
             }
         }
     }
-    else if(chipColor === "RED") {
-        printDebug("true");
-        for(var i = oldTileNumber; i <= 56; i++) {
-            var tile = tiles[i];
-            if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
-                if(tile.number === oldTileNumber) {
-                    continue;
+    else {
+        var direction = oldTile.number > newTile.number ? "UP" : "DOWN";
+        if(direction === "UP") {
+            if(chipColor === "BLUE" || chipColor === "RED"){
+                printDebug("(DIAGONAL LEFT) BLUE OR RED UP");
+                for(var i = oldTileNumber; i >= 0; i--) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 9 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                        allLeftDiagonalTiles.push(tile);
+                    }
                 }
-                allLeftDiagonalTiles.push(tile);
+            }
+        }
+        else if(direction === "DOWN") {
+            if(chipColor === "BLUE" || chipColor === "RED"){
+                printDebug("(DIAGONAL LEFT) BLUE OR RED DOWN");
+                for(var i = oldTileNumber; i <= 64; i++) {
+                    var tile = tiles[i];
+                    if(tile.color === "BLACK" && (oldTileNumber - tile.number) % 7 === 0) {
+                        if(tile.number === oldTileNumber) {
+                            continue;
+                        }
+                        allLeftDiagonalTiles.push(tile);
+                    }
+                }
             }
         }
     }
     return allLeftDiagonalTiles;
-};
-
-var detectIfCapture = function(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles) {
-    
-    //Right capture logic
-    //1 Chip Capture
-    
+}
+function printTileAndChips(diagonalTileArray) {
+    printDebug(diagonalTileArray.length);
+    for(var i = 0; i < diagonalTileArray; i++) {
+        printDebug(diagonalTileArray[i]);
+    }
+}
+function detectIfCapture(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles) {
     printDebug("Grabbing Tiles Information:");
     printDebug(" * Right Diagonal Tiles Length: " + rightDiagonalTiles.length);
     printDebug(" * Left Diagonal Tiles Length: " + leftDiagonalTiles.length);
     printDebug(" ");
     printDebug("Function detectIfCapture Log 1");
+    
+    printDebug("-----------------");
+    printDebug("Right Diagonal Tiles Information:");
+    for(var i = 0; i < rightDiagonalTiles.length; i++) {
+        var tile = rightDiagonalTiles[i];
+        printDebug("(" + i + "th index) Tile #: " + tile.number);
+        printDebug("(" + i + "th index) Tile Color: " + tile.color);
+    }
+    printDebug("-----------------");
+    printDebug("Left Diagonal Tiles Information:");
+    for(var i = 0; i < leftDiagonalTiles.length; i++) {
+        var tile = leftDiagonalTiles[i];
+        printDebug("(" + i + "th index) Tile #: " + tile.number);
+        printDebug("(" + i + "th index) Tile Color: " + tile.color);
+    }
+    printDebug("-----------------");
+    
+    //Right capture logic
+    //1 Chip Capture
     if(rightDiagonalTiles.length >= 2) {
         if(rightDiagonalTiles[0].hasChip && rightDiagonalTiles[0].chipColor !== oldTile.chipColor && !rightDiagonalTiles[1].hasChip && newTile.number === rightDiagonalTiles[1].number) {
-            removeChipFromBoard(rightDiagonalTiles[0], rightDiagonalTiles[0].getChip());
+            removeChipFromBoard(rightDiagonalTiles[0]);
             printDebug(" * (RIGHT DIAGONAL) Captured 1 Chip");
             return true;
         }
@@ -683,8 +702,8 @@ var detectIfCapture = function(oldTile, newTile, rightDiagonalTiles, leftDiagona
     //2 Chip Capture
     if(rightDiagonalTiles.length >= 4) {
         if(rightDiagonalTiles[0].hasChip && rightDiagonalTiles[0].chipColor !== oldTile.chipColor && !rightDiagonalTiles[1].hasChip && rightDiagonalTiles[2].hasChip && rightDiagonalTiles[2].chipColor !== oldTile.chipColor && !rightDiagonalTiles[3].hasChip && newTile.number === rightDiagonalTiles[3].number) {
-            removeChipFromBoard(rightDiagonalTiles[0], rightDiagonalTiles[0].getChip());
-            removeChipFromBoard(rightDiagonalTiles[2], rightDiagonalTiles[2].getChip());
+            removeChipFromBoard(rightDiagonalTiles[0]);
+            removeChipFromBoard(rightDiagonalTiles[2]);
             printDebug(" * (RIGHT DIAGONAL) Captured 2 Chip");
             return true;
         }
@@ -694,7 +713,7 @@ var detectIfCapture = function(oldTile, newTile, rightDiagonalTiles, leftDiagona
     //1 Chip Capture
     if(leftDiagonalTiles.length >= 2) {
         if(leftDiagonalTiles[0].hasChip && leftDiagonalTiles[0].chipColor !== oldTile.chipColor && !leftDiagonalTiles[1].hasChip && newTile.number === leftDiagonalTiles[1].number) {
-            removeChipFromBoard(leftDiagonalTiles[0], leftDiagonalTiles[0].getChip());
+            removeChipFromBoard(leftDiagonalTiles[0]);
             printDebug(" * (LEFT DIAGONAL) Captured 1 Chip");
             return true;
         }
@@ -703,16 +722,16 @@ var detectIfCapture = function(oldTile, newTile, rightDiagonalTiles, leftDiagona
     //2 Chip Capture
     if(leftDiagonalTiles.length >= 4) {
         if(leftDiagonalTiles[0].hasChip && leftDiagonalTiles[0].chipColor !== oldTile.chipColor && !leftDiagonalTiles[1].hasChip && leftDiagonalTiles[2].hasChip && leftDiagonalTiles[2].chipColor !== oldTile.chipColor && !leftDiagonalTiles[3].hasChip && newTile.number === leftDiagonalTiles[3].number) {
-            removeChipFromBoard(leftDiagonalTiles[0], leftDiagonalTiles[0].getChip());
-            removeChipFromBoard(leftDiagonalTiles[2], leftDiagonalTiles[2].getChip());
+            removeChipFromBoard(leftDiagonalTiles[0]);
+            removeChipFromBoard(leftDiagonalTiles[2]);
             printDebug(" * (LEFT DIAGONAL) Captured 2 Chip");
             return true;
         }
     }
     return false;
-};
+}
 
-var randomizeTurn = function() {
+function randomizeTurn() {
     var randomNumber = round(random(0,1));
     var color = turn[randomNumber];
     
@@ -729,43 +748,50 @@ var randomizeTurn = function() {
     }
     
     turnNotifyScoreboard.canMoveIn = true;
-    println(turn[0] + "'s Turn");
+    printDebug(turn[0] + "'s Turn");
     
-};
+}
 
-var drawStartScreen = function() {
+function drawStartScreen() {
     scene = "start_screen";
     background(74, 4, 4);
     textSize(57);
     fill(255, 255, 255);
     text("Checkers", 78, 100);
+    textSize(15);
+    text("How to win?: Capture all the opponents chips", 50, 145);
     textSize(25);
-    text("Click below to play", 94, 179);
+    text("Click below to play", 94, 195);
     drawBitmojiB(106, 321, 100);
     drawBitmojiZ(298,324,100);
     startButton.draw();
-};
+}
 
-var drawWinnerScreen = function(color) {
+function drawWinnerScreen(color) {
+    rectMode(CORNER);
+    ellipseMode(CORNER);
     scene = "winner_screen";
-    background(153, 12, 12);
+    background(74, 4, 4);
     if(color === "BLUE") {
         fill(119, 209, 219);
     }
     else if(color === "RED") {
         fill(252, 0, 0);
     }
-    textSize(32);
-    text("Winner: " + color + " CHIPS", 15, 110);
+    textSize(35);
+    text("Winner: " + color + " CHIPS", 30, 110);
+    textSize(25);
+    fill(255, 255, 255);
+    text("Click below to restart the game", 30, 170);
     restartButton.draw();
-};
+}
 /*************/
 
 /*************
 KHAN FUNCTIONS
 **************/
 mouseClicked = function() {
-    println("X: " + mouseX + ", Y: " + mouseY); 
+    printDebug("X: " + mouseX + ", Y: " + mouseY); 
     if(scene === "start_screen") {
         if(!startButton.isClicked()) {
             return;
@@ -774,33 +800,35 @@ mouseClicked = function() {
         drawBoard();
         addChipsToBoard();
         randomizeTurn();
-        
+        return;
     }
     if(scene === "winner_screen") {
         if(!restartButton.isClicked()) {
             return;
         }
         Program.restart();
+        return;
     }
 
     for(var i = 0; i < scoreboards.length; i++) {
         var scoreboard = scoreboards[i];
         if(scoreboard.isClicked()) {
             scoreboard.canMoveIn = true;
-            println("Touching scoreboard");
+            return;
         }
     }
     //Logic if a chip on the board is selected (to move a chip)
-    if(selectedChip.isSelected) {
-        var chipSelected = selectedChip.getChip();
+    if(selectedChip !== null && selectedChip.isSelected) {
         for(var i = 0; i < tiles.length; i++) {
             var newTile = tiles[i];
             var newTileNumber = i + 1;
             if(newTile.isClicked()) {
-                var oldTile = chipSelected.getTile();
+                var oldTile = selectedChip.getTile();
                 if(newTile === oldTile) {
-                    printDebug("Un-Selecting " + chipSelected.color + " Chip (#" + chipSelected.tileNumber + ")");
-                    selectedChip.unselectChip(newTileNumber);
+                    printDebug("Un-Selecting " + selectedChip.color + " Chip (#" + selectedChip.tileNumber + ")");
+                    selectedChip.isSelected = false;
+                    selectedChip.tileNumber = newTileNumber;
+                    //selectedChip.unselectChip(newTileNumber);
                     return;
                 }
                 if(newTile.hasChip === true) {
@@ -815,44 +843,52 @@ mouseClicked = function() {
                 var newTileY = newTile.y;
                 var oldTileY = oldTile.y;
                 
-                var chipColor = chipSelected.color;
+                var chipColor = selectedChip.color;
                 if((newTile.number - oldTile.number) % 9 !== 0 && (newTile.number - oldTile.number) % 7 !== 0) {
                     printDebug("You can only move your " + chipColor + " chips diagonally");
                     return;
                 }
-                if(newTileY <= oldTileY && chipColor === "RED" && !chipSelected.isKing) {
+                if(newTileY <= oldTileY && chipColor === "RED" && !selectedChip.isKing) {
                     printDebug("You can only move " + chipColor + " chips down!");
                     return;
                 }
-                if(newTileY >= oldTileY && chipColor === "BLUE" && !chipSelected.isKing) {
+                if(newTileY >= oldTileY && chipColor === "BLUE" && !selectedChip.isKing) {
                     printDebug("You can only move " + chipColor + " chips up!");
                     return;
                 }
                 
-                var rightDiagonalTiles = getTilesDiagonallyRight(chipSelected, oldTile, newTile);
-                var leftDiagonalTiles = getTilesDiagonallyLeft(chipSelected, oldTile, newTile);
+                var rightDiagonalTiles = getTilesDiagonallyRight(selectedChip, oldTile, newTile);
+                var leftDiagonalTiles = getTilesDiagonallyLeft(selectedChip, oldTile, newTile);
                 var hasCaptured = detectIfCapture(oldTile, newTile, rightDiagonalTiles, leftDiagonalTiles);
+                printDebug("Has Captured: " + hasCaptured);
                 if(!hasCaptured && oldTile.y - newTile.y > 49 && chipColor === "BLUE" ||
-                !hasCaptured && oldTile.y - newTile.y > 49 && chipColor === "RED" && chipSelected.isKing) {
+                !hasCaptured && oldTile.y - newTile.y > 49 && chipColor === "RED" && selectedChip.isKing) {
                     printDebug("You can only move 1 spot at a time!");
                     return;
                 }
-                if(!hasCaptured && newTile.y - oldTile.y > 49 && chipColor === "RED" || !hasCaptured && newTile.y - oldTile.y > 49 && chipColor === "BLUE" && chipSelected.isKing) {
+                if(!hasCaptured && newTile.y - oldTile.y > 49 && chipColor === "RED" || !hasCaptured && newTile.y - oldTile.y > 49 && chipColor === "BLUE" && selectedChip.isKing) {
                     printDebug("You can only move 1 spot at a time!");
                     return;
                 }
-                selectedChip.unselectChip(newTileNumber);
-                chipSelected.x = newTile.x;
-                chipSelected.y = newTile.y;
+                selectedChip.x = newTile.x;
+                selectedChip.y = newTile.y;
+                
                 oldTile.hasChip = false;
                 oldTile.chipColor = null;
+                oldTile.chip = null;
+                
                 newTile.hasChip = true;
-                newTile.chipColor = chipSelected.color;
+                newTile.chipColor = selectedChip.color;
+                newTile.chip = selectedChip;
+                
+                selectedChip.isSelected = false;
+                selectedChip.tileNumber = newTileNumber;
+                //selectedChip.unselectChip(newTileNumber);
                 if(chipColor === "BLUE" && newTile.number >= 1 && newTile.number <= 8) {
-                    chipSelected.isKing = true;
+                    selectedChip.isKing = true;
                 }
                 else if(chipColor === "RED" && newTile.number >= 57 && newTile.number <= 64) {
-                    chipSelected.isKing = true;
+                    selectedChip.isKing = true;
                 }
                 
                 if(hasCaptured) {
@@ -884,7 +920,6 @@ mouseClicked = function() {
             }
         }
     }
-    
     //Logic if a chip is not selected (to select a chip)
     for(var i = 0; i < chips.length; i++) {
         var chip = chips[i];
@@ -897,15 +932,11 @@ mouseClicked = function() {
         
         if(chip.isSelected === false) {
             printDebug("-=-=-=- Selecting " + chip.color + " Chip (#" + chip.tileNumber + ") -=-=-=-");
+            selectedChip = chip;
             chip.isSelected = true;
-            selectedChip.setChip(chips,i);
-            for(var i = 0; i < chips.length; i++) {
-                var chipInArray = chips[i];
-                if(chipInArray === chip) {
-                    printDebug("selecting chip at chips index " + i);
-                    return;
-                }
-            }
+            /*selectedChip.setChip(chips,i);
+            printChipAtArrayIndex(chip);
+            printDebug(chips[16]);*/
         }
     }
 };
